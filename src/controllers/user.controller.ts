@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
 import { CreateUserSchema } from "../validators/schemas";
-import logger from "../utils/logger";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // User Controller
@@ -63,7 +62,7 @@ export const UserController = {
 
   // GET /api/users/:userId
   async getById(
-    req: Request,
+    req: Request<{ userId: string }>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
@@ -88,7 +87,7 @@ export const UserController = {
 
   // GET /api/users/:userId/sessions
   async getSessions(
-    req: Request,
+    req: Request<{ userId: string }>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {

@@ -35,7 +35,7 @@ export const SessionController = {
 
   // GET /api/sessions/:sessionId
   async getById(
-    req: Request,
+    req: Request<{ sessionId: string }>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
@@ -60,7 +60,7 @@ export const SessionController = {
 
   // GET /api/sessions/:sessionId/messages
   async getMessages(
-    req: Request,
+    req: Request<{ sessionId: string }>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
@@ -88,7 +88,7 @@ export const SessionController = {
 
   // GET /api/sessions/:sessionId/reports
   async getReports(
-    req: Request,
+    req: Request<{ sessionId: string }>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
@@ -115,7 +115,7 @@ export const SessionController = {
 
   // GET /api/reports/:reportId
   async getReportById(
-    req: Request,
+    req: Request<{ reportId: string }>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
@@ -139,7 +139,11 @@ export const SessionController = {
   },
 
   // DELETE /api/sessions/:sessionId
-  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async delete(
+    req: Request<{ sessionId: string }>,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const { sessionId } = req.params;
       const session = await SessionService.findById(sessionId);
@@ -162,7 +166,7 @@ export const SessionController = {
 
   // PATCH /api/sessions/:sessionId/title
   async updateTitle(
-    req: Request,
+    req: Request<{ sessionId: string }, { title: string }>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
