@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  preferences Json?     @default("{}")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  title        String    @default("New session")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  lastActiveAt DateTime  @default(now()) @map("last_active_at")
+  messages     Message[]
+  reports      Report[]
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  sessionId String      @map("session_id")
+  role      MessageRole
+  content   String
+  createdAt DateTime    @default(now()) @map("created_at")
+  session   Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("messages")
+}
+
+model Report {
+  id             String      @id @default(uuid())
+  sessionId      String      @map("session_id")
+  query          String
+  frameworkUsed  IRFramework @map("framework_used")
+  output         Json
+  partialSources Boolean     @default(false) @map("partial_sources")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  session        Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  toolLogs       ToolLog[]
+
+  @@index([sessionId])
+  @@map("reports")
+}
+
+model ToolLog {
+  id       String   @id @default(uuid())
+  reportId String   @map("report_id")
+  toolName String   @map("tool_name")
+  input    Json
+  output   Json
+  calledAt DateTime @default(now()) @map("called_at")
+  report   Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@map("tool_logs")
+}
+
+enum MessageRole {
+  user
+  assistant
+}
+
+enum IRFramework {
+  realism
+  liberalism
+  constructivism
+  political_economy
+}
