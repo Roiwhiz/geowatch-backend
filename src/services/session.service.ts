@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { CreateSessionInput } from "../validators/schemas";
-import type { Session } from "@prisma/client";
+import { Session } from "@prisma/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Session Service

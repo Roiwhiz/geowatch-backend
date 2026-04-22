@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { CreateUserInput } from "../validators/schemas";
-import type { User } from "@prisma/client";
+import { User } from "@prisma/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // User Service
