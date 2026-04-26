@@ -80,7 +80,7 @@ async function persistAndReturn(
     if (updateTitle) {
       const messageCount = await MessageService.count(sessionId);
       if (messageCount <= 2) {
-        await SessionService.updateTitle(sessionId, query);
+        await SessionService.setAutoTitle(sessionId, query);
       }
     }
     await SessionService.touch(sessionId);

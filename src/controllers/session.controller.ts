@@ -42,16 +42,7 @@ export const SessionController = {
     try {
       const { sessionId } = req.params;
       const session = await SessionService.findById(sessionId);
-
-      if (!session) {
-        res.status(404).json({
-          error: "session_not_found",
-          message: `Session '${sessionId}' not found`,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
+      if (!session) throw new NotFoundError("sesssion", sessionId);
       res.json(session);
     } catch (error) {
       next(error);
@@ -66,20 +57,10 @@ export const SessionController = {
   ): Promise<void> {
     try {
       const { sessionId } = req.params;
-
       // Verify session exists
       const session = await SessionService.findById(sessionId);
-      if (!session) {
-        res.status(404).json({
-          error: "session_not_found",
-          message: `Session '${sessionId}' not found`,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
+      if (!session) throw new NotFoundError("Session", sessionId);
       const messages = await MessageService.loadHistory(sessionId);
-      logger.info(messages, "[Database:]");
       res.json(messages);
     } catch (error) {
       next(error);
@@ -97,15 +78,7 @@ export const SessionController = {
 
       // Verify session exists
       const session = await SessionService.findById(sessionId);
-      if (!session) {
-        res.status(404).json({
-          error: "session_not_found",
-          message: `Session '${sessionId}' not found`,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
+      if (!session) throw new NotFoundError("Session", sessionId);
       const reports = await SessionService.findReportsBySessionId(sessionId);
       res.json(reports);
     } catch (error) {
@@ -122,16 +95,7 @@ export const SessionController = {
     try {
       const { reportId } = req.params;
       const report = await ReportService.findById(reportId);
-
-      if (!report) {
-        res.status(404).json({
-          error: "report_not_found",
-          message: `Report '${reportId}' not found`,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
+      if (!report) throw new NotFoundError("Report", reportId);
       res.json(report);
     } catch (error) {
       next(error);
@@ -147,13 +111,10 @@ export const SessionController = {
     try {
       const { sessionId } = req.params;
       const session = await SessionService.findById(sessionId);
-
       if (!session) {
         throw new NotFoundError("Session", sessionId);
       }
-
       await SessionService.delete(sessionId);
-
       res.status(200).json({
         success: true,
         message: "Session deleted successfully.",

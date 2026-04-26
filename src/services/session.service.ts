@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { NotFoundError } from "../utils/errors";
 import { CreateSessionInput } from "../validators/schemas";
 import { Session } from "@prisma/client";
 
@@ -17,15 +18,7 @@ export const SessionService = {
       where: { id: input.userId },
     });
 
-    if (!user) {
-      const error: Error & { statusCode?: number; code?: string } = new Error(
-        `User '${input.userId}' not found`,
-      );
-      error.statusCode = 404;
-      error.code = "user_not_found";
-      throw error;
-    }
-
+    if (!user) throw new NotFoundError("User", input.userId);
     return prisma.session.create({
       data: { userId: input.userId },
     });
@@ -36,14 +29,19 @@ export const SessionService = {
     return prisma.session.findUnique({ where: { id } });
   },
 
-  // Update session title — auto-called after the first message in a session.
-  // The title is derived from the user's first query (truncated to 60 chars).
-  async updateTitle(id: string, firstQuery: string): Promise<void> {
+  async setAutoTitle(id: string, firstQuery: string): Promise<void> {
     const title =
-      firstQuery.length > 60
-        ? firstQuery.substring(0, 10).trimEnd() + "..."
+      firstQuery.length > 15
+        ? firstQuery.substring(0, 15).trimEnd() + "..."
         : firstQuery;
 
+    await prisma.session.update({
+      where: { id },
+      data: { title },
+    });
+  },
+  // Update session title — auto-called after the first message in a session.
+  async updateTitle(id: string, title: string): Promise<void> {
     await prisma.session.update({
       where: { id },
       data: { title },

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
 import { CreateUserSchema } from "../validators/schemas";
+import { NotFoundError } from "../utils/errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // User Controller
@@ -70,14 +71,7 @@ export const UserController = {
       const { userId } = req.params;
       const user = await UserService.findById(userId);
 
-      if (!user) {
-        res.status(404).json({
-          error: "user_not_found",
-          message: `User '${userId}' not found`,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
+      if (!user) throw new NotFoundError("User", userId);
 
       res.json(user);
     } catch (error) {
@@ -95,15 +89,7 @@ export const UserController = {
       const { userId } = req.params;
 
       const user = await UserService.findById(userId);
-      if (!user) {
-        res.status(404).json({
-          error: "user_not_found",
-          message: `User '${userId}' not found`,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
+      if (!user) throw new NotFoundError("User", userId);
       const sessions = await UserService.findSessionsByUserId(userId);
       res.json(sessions);
     } catch (error) {

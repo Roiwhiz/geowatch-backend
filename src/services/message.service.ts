@@ -15,6 +15,7 @@ export interface MessageRecord {
   role: MessageRole;
   content: string;
   createdAt: Date;
+  reportId?: string | null;
 }
 
 // Shape Gemini expects for conversation history
@@ -56,15 +57,36 @@ export const MessageService = {
   // Load the full message history for a session, ordered chronologically.
   // This is what gets sent to Gemini as conversation context.
   async loadHistory(sessionId: string): Promise<MessageRecord[]> {
-    return prisma.message.findMany({
+    // Load messages
+    const messages = await prisma.message.findMany({
       where: { sessionId },
       orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        role: true,
-        content: true,
-        createdAt: true,
-      },
+      select: { id: true, role: true, content: true, createdAt: true },
+    });
+
+    // Load reports for this session, ordered by creation time
+    const reports = await prisma.report.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, createdAt: true },
+    });
+
+    // Match each assistant message to its report by pairing them in order.
+    // Each assistant message corresponds to exactly one report — they are
+    // created in the same agent turn, so the nth assistant message maps to
+    // the nth report.
+    const assistantMessages = messages.filter((m) => m.role === "assistant");
+    const reportIdByIndex = new Map(
+      assistantMessages.map((_, i) => [i, reports[i]?.id]),
+    );
+
+    let assistantIndex = 0;
+    return messages.map((m) => {
+      if (m.role === "assistant") {
+        const reportId = reportIdByIndex.get(assistantIndex++);
+        return { ...m, reportId: reportId ?? null };
+      }
+      return { ...m, reportId: null };
     });
   },
 

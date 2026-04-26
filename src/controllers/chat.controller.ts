@@ -13,7 +13,6 @@ import { NotFoundError, SessionBusyError } from "../utils/errors";
 
 export const ChatController = {
   async chat(req: Request, res: Response, next: NextFunction): Promise<void> {
-    console.log(req.body);
     // ── 1. Validate request body ─────────────────────────────────────────────
     const result = ChatRequestSchema.safeParse(req.body);
     if (!result.success) {
