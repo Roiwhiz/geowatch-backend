@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { ChatRequestSchema } from "../validators/schemas";
 import { SessionService } from "../services/session.service";
 import { MessageService } from "../services/message.service";
 import { LockService } from "../services/lock.service";
@@ -13,19 +12,7 @@ import { NotFoundError, SessionBusyError } from "../utils/errors";
 
 export const ChatController = {
   async chat(req: Request, res: Response, next: NextFunction): Promise<void> {
-    // ── 1. Validate request body ─────────────────────────────────────────────
-    const result = ChatRequestSchema.safeParse(req.body);
-    if (!result.success) {
-      res.status(400).json({
-        error: "validation_error",
-        message: "Invalid request body",
-        details: result.error.flatten().fieldErrors,
-        timestamp: new Date().toISOString(),
-      });
-      return;
-    }
-
-    const { query, sessionId, locale } = result.data;
+    const { query, sessionId, locale } = req.body;
     let lockAcquired = false;
 
     try {
@@ -50,7 +37,7 @@ export const ChatController = {
       logger.info(`[Chat] Starting agent run — session: ${sessionId}`);
       logger.info(`[Chat] Query: "${query}"`);
 
-      const { reportId, rawOutput } = await runAgentLoop({
+      const { reportId, rawOutput, responseType } = await runAgentLoop({
         sessionId,
         query,
         history: geminiHistory,
@@ -58,7 +45,6 @@ export const ChatController = {
       });
 
       logger.info(`[Chat] Agent run complete — report: ${reportId}`);
-
       // ── 6. Return the response ─────────────────────────────────────────────
       res.json({
         id: reportId,
@@ -67,6 +53,7 @@ export const ChatController = {
         content: rawOutput,
         createdAt: new Date().toISOString(),
         reportId,
+        responseType,
       });
     } catch (error) {
       next(error);

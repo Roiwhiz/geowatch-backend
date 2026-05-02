@@ -47,9 +47,8 @@ export const ChatRequestSchema = z.object({
 export type ChatRequestInput = z.infer<typeof ChatRequestSchema>;
 
 // ── Shared ────────────────────────────────────────────────────────────────────
-
-export const UUIDParamSchema = z.object({
-  id: z.string().uuid("Must be a valid UUID").optional(),
-  sessionId: z.string().uuid("Must be a valid UUID").optional(),
-  userId: z.string().uuid("Must be a valid UUID").optional(),
-});
+// export const UUIDParamSchema = z.object({
+//   id: z.string().uuid("Must be a valid UUID").optional(),
+//   sessionId: z.string().uuid("Must be a valid UUID").optional(),
+//   userId: z.string().uuid("Must be a valid UUID").optional(),
+// });

@@ -17,7 +17,7 @@ import {
   classifyPrismaError,
   parseRetryAfter,
 } from "../utils/errors";
-
+import { classifyResponse, ResponseType } from "./report.service";
 // ─────────────────────────────────────────────────────────────────────────────
 // Agent Loop
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,6 +56,7 @@ export interface AgentRunInput {
 export interface AgentRunOutput {
   reportId: string;
   rawOutput: string;
+  responseType: ResponseType;
 }
 
 // ── Persistence helper ────────────────────────────────────────────────────────
@@ -68,6 +69,7 @@ async function persistAndReturn(
   updateTitle: boolean,
 ): Promise<AgentRunOutput> {
   try {
+    const responseType = classifyResponse(rawOutput);
     const parsed = ReportService.parseOutput(rawOutput);
     const reportId = await ReportService.save(
       sessionId,
@@ -75,6 +77,7 @@ async function persistAndReturn(
       parsed,
       toolCalls,
       partialSources,
+      responseType,
     );
     await MessageService.saveTurn(sessionId, query, rawOutput);
     if (updateTitle) {
@@ -84,7 +87,7 @@ async function persistAndReturn(
       }
     }
     await SessionService.touch(sessionId);
-    return { reportId, rawOutput };
+    return { reportId, rawOutput, responseType };
   } catch (error) {
     const e = error as { code?: string; clientVersion?: string };
     if (e.clientVersion || e.code?.startsWith("P")) {

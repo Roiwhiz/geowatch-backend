@@ -46,6 +46,7 @@ model Report {
   sessionId      String      @map("session_id")
   query          String
   frameworkUsed  IRFramework @map("framework_used")
+  responseType   ResponseType @default(report) @map("response_type")
   output         Json
   partialSources Boolean     @default(false) @map("partial_sources")
   createdAt      DateTime    @default(now()) @map("created_at")
@@ -79,4 +80,9 @@ enum IRFramework {
   liberalism
   constructivism
   political_economy
+}
+
+enum ResponseType {
+  report
+  conversational
 }

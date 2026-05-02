@@ -2,11 +2,7 @@ import { prisma } from "../config/prisma";
 import { IRFramework } from "@prisma/client";
 import { ToolResult } from "../tools/index";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Report Service
-// Persists completed agent outputs and their tool call logs to the database.
-// Called by the agent loop after every successful run.
-// ─────────────────────────────────────────────────────────────────────────────
+export type ResponseType = "report" | "conversational";
 
 export interface ParsedReport {
   framework: IRFramework;
@@ -25,9 +21,24 @@ export interface ToolCallRecord {
   output: ToolResult;
 }
 
+
+export function classifyResponse(raw: string): ResponseType {
+  // A structured report must have at least BLUF and one other section marker.
+  // We check for the bracket labels the system prompt enforces.
+  const hasBluf = raw.includes("[BLUF]:");
+  const hasFramework = raw.includes("[FRAMEWORK]:");
+  const hasAnalysis = raw.includes("[ANALYSIS]:");
+
+  // Require at least BLUF + one structural section to count as a report.
+  // A response with only one marker is likely a partial or malformed response.
+  if (hasBluf && (hasFramework || hasAnalysis)) {
+    return "report";
+  }
+
+  return "conversational";
+}
+
 export const ReportService = {
-  // Parse the raw agent output string into structured sections.
-  // The system prompt enforces the section labels — we extract them here.
   parseOutput(raw: string): ParsedReport {
     const extract = (label: string, nextLabel?: string): string => {
       const start = raw.indexOf(`[${label}]:`);
@@ -39,11 +50,9 @@ export const ReportService = {
 
     const frameworkRaw = extract("FRAMEWORK", "BLUF").toUpperCase();
 
-    // Map to Prisma enum — default to realism if unrecognised
     let framework: IRFramework = "realism";
     if (frameworkRaw.includes("LIBERALISM")) framework = "liberalism";
-    else if (frameworkRaw.includes("CONSTRUCTIVISM"))
-      framework = "constructivism";
+    else if (frameworkRaw.includes("CONSTRUCTIVISM")) framework = "constructivism";
     else if (
       frameworkRaw.includes("POLITICAL_ECONOMY") ||
       frameworkRaw.includes("POLITICAL ECONOMY")
@@ -62,22 +71,22 @@ export const ReportService = {
     };
   },
 
-  // Save a completed report and all its tool call logs in one transaction.
   async save(
     sessionId: string,
     query: string,
     parsed: ParsedReport,
     toolCalls: ToolCallRecord[],
     partialSources: boolean,
+    responseType: ResponseType,   
   ): Promise<string> {
     const result = await prisma.$transaction(async (tx) => {
-      // Create the report
       const report = await tx.report.create({
         data: {
           sessionId,
           query,
           frameworkUsed: parsed.framework,
           partialSources,
+          responseType,            
           output: {
             bluf: parsed.bluf,
             background: parsed.background,
@@ -90,7 +99,6 @@ export const ReportService = {
         },
       });
 
-      // Create a tool log entry for each tool call made during this run
       if (toolCalls.length > 0) {
         await tx.toolLog.createMany({
           data: toolCalls.map((tc) => ({
@@ -108,7 +116,6 @@ export const ReportService = {
     return result;
   },
 
-  // Fetch a single report by ID.
   async findById(id: string) {
     return prisma.report.findUnique({
       where: { id },

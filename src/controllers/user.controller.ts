@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
-import { CreateUserSchema } from "../validators/schemas";
 import { NotFoundError } from "../utils/errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -13,18 +12,7 @@ export const UserController = {
   // POST /api/users
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = CreateUserSchema.safeParse(req.body);
-      if (!result.success) {
-        res.status(400).json({
-          error: "validation_error",
-          message: "Invalid request body",
-          details: result.error.flatten().fieldErrors,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
-      const user = await UserService.create(result.data);
+      const user = await UserService.create(req.body);
       res.status(201).json(user);
     } catch (error) {
       next(error);
@@ -41,19 +29,7 @@ export const UserController = {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const result = CreateUserSchema.safeParse(req.body);
-      if (!result.success) {
-        res.status(400).json({
-          error: "validation_error",
-          message: "Invalid request body",
-          details: result.error.flatten().fieldErrors,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
-      const user = await UserService.identify(result.data.email);
-
+      const user = await UserService.identify(req.body.email);
       // 201 for new users, 200 for returning users
       res.status(user.isNew ? 201 : 200).json(user);
     } catch (error) {

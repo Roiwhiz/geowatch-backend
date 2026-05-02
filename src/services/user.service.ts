@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { ConflictError } from "../utils/errors";
 import { CreateUserInput } from "../validators/schemas";
 import { User } from "@prisma/client";
 
@@ -15,14 +16,8 @@ export const UserService = {
       where: { email: input.email },
     });
 
-    if (existing) {
-      const error: Error & { statusCode?: number; code?: string } = new Error(
-        `User with email '${input.email}' already exists`,
-      );
-      error.statusCode = 409;
-      error.code = "user_already_exists";
-      throw error;
-    }
+    if (existing)
+      throw new ConflictError(`User with email ${input.email} already exists`);
 
     return prisma.user.create({
       data: { email: input.email },

@@ -2,8 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { SessionService } from "../services/session.service";
 import { MessageService } from "../services/message.service";
 import { ReportService } from "../agent/report.service";
-import { CreateSessionSchema } from "../validators/schemas";
-import logger from "../utils/logger";
 import { NotFoundError, ValidationError } from "../utils/errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -15,18 +13,7 @@ export const SessionController = {
   // POST /api/sessions
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = CreateSessionSchema.safeParse(req.body);
-      if (!result.success) {
-        res.status(400).json({
-          error: "validation_error",
-          message: "Invalid request body",
-          details: result.error.flatten().fieldErrors,
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
-      const session = await SessionService.create(result.data);
+      const session = await SessionService.create(req.body);
       res.status(201).json(session);
     } catch (error) {
       next(error);

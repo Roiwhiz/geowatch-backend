@@ -58,12 +58,12 @@ export const SessionService = {
 
   // Verify a session belongs to a specific user.
   // Used to prevent users from accessing other users' sessions.
-  async verifyOwnership(sessionId: string, userId: string): Promise<boolean> {
-    const session = await prisma.session.findFirst({
-      where: { id: sessionId, userId },
-    });
-    return session !== null;
-  },
+  // async verifyOwnership(sessionId: string, userId: string): Promise<boolean> {
+  //   const session = await prisma.session.findFirst({
+  //     where: { id: sessionId, userId },
+  //   });
+  //   return session !== null;
+  // },
 
   // Delete a session by ID.
   async delete(id: string): Promise<void> {

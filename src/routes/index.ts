@@ -2,6 +2,12 @@ import { Router, Request, Response } from "express";
 import { UserController } from "../controllers/user.controller";
 import { SessionController } from "../controllers/session.controller";
 import { ChatController } from "../controllers/chat.controller";
+import { validate } from "../middleware/validate";
+import {
+  CreateUserSchema,
+  CreateSessionSchema,
+  ChatRequestSchema,
+} from "../validators/schemas";
 
 export const router = Router();
 
@@ -81,7 +87,11 @@ router.get("/health", (_req: Request, res: Response) => {
  */
 // IMPORTANT: /api/users/identify must be declared BEFORE /api/users/:userId
 // otherwise Express matches "identify" as a userId param and hits the wrong route
-router.post("/api/users/identify", UserController.identify);
+router.post(
+  "/api/users/identify",
+  validate(CreateUserSchema),
+  UserController.identify,
+);
 
 /**
  * @swagger
@@ -120,7 +130,7 @@ router.post("/api/users/identify", UserController.identify);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/api/users", UserController.create);
+router.post("/api/users", validate(CreateUserSchema), UserController.create);
 
 /**
  * @swagger
@@ -212,7 +222,11 @@ router.get("/api/users/:userId/sessions", UserController.getSessions);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/api/sessions", SessionController.create);
+router.post(
+  "/api/sessions",
+  validate(CreateSessionSchema),
+  SessionController.create,
+);
 
 /**
  * @swagger
@@ -385,7 +399,7 @@ router.patch("/api/sessions/:sessionId/title", SessionController.updateTitle);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/api/chat", ChatController.chat);
+router.post("/api/chat", validate(ChatRequestSchema), ChatController.chat);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Reports
