@@ -7,7 +7,7 @@
     "dev": "cross-env NODE_ENV=development ts-node-dev --respawn --exit-child --transpile-only src/server.ts",
     "postinstall": "prisma generate",
     "build": "tsc",
-    "start": "npm run db:migrate:prod && node dist/server.js",
+    "start": "node dist/server.js",
     "lint": "eslint src/**/*.ts",
     "db:migrate:prod": "prisma migrate deploy",
     "db:studio": "prisma studio",
