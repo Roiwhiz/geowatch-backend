@@ -1,16 +1,3 @@
-// // ─────────────────────────────────────────────────────────────────────────────
-// // Prisma Client Singleton
-// //
-// // Why a singleton? Prisma opens a connection pool when instantiated.
-// // Creating a new PrismaClient on every request would exhaust database
-// // connections quickly. One instance shared across the entire application
-// // is the correct pattern.
-// //
-// // The global declaration prevents multiple instances during hot reloads
-// // in development (ts-node-dev re-evaluates modules on change, which would
-// // create a new client on every save without this guard).
-// // ─────────────────────────────────────────────────────────────────────────────
-
 import dotenv from "dotenv";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
