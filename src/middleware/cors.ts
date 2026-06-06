@@ -1,11 +1,5 @@
 import cors from "cors";
 
-// const allowedOrigins = [
-//   process.env.FRONTEND_URL ?? "http://localhost:3000",
-//   "http://localhost:5000",
-//   "http://localhost:3001",
-// ];
-
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:3000",
@@ -31,18 +25,4 @@ export const corsMiddleware = cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
-// export const corsMiddleware = cors({
-//   origin: (origin, callback) => {
-//     // Allow requests with no origin (e.g. Swagger UI, Postman, server-to-server)
-//     if (!origin) return callback(null, true);
 
-//     if (allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error(`CORS: origin '${origin}' is not allowed`));
-//     }
-//   },
-//   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-//   credentials: true,
-// });
