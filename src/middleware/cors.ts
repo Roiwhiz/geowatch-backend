@@ -1,12 +1,8 @@
 import cors from "cors";
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:3000",
-  "http://localhost:5000",
-  "http://localhost:3001",
-  "https://geowatch-frontend.vercel.app",
-].filter(Boolean) as string[];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+  : [];
 
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
@@ -25,4 +21,3 @@ export const corsMiddleware = cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
-
