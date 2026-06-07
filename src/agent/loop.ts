@@ -18,6 +18,7 @@ import {
   parseRetryAfter,
 } from "../utils/errors";
 import { classifyResponse, ResponseType } from "./report.service";
+import { QuotaService } from "../services/quota.service";
 // ─────────────────────────────────────────────────────────────────────────────
 // Agent Loop
 // ─────────────────────────────────────────────────────────────────────────────
@@ -226,6 +227,7 @@ async function callGeminiWithRetry(model: GenerativeModel, history: Content[]) {
       });
       const lastMessage = history[history.length - 1];
       const result = await chat.sendMessage(lastMessage.parts);
+      await QuotaService.increment();
       return result.response;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));

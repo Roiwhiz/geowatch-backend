@@ -5,6 +5,8 @@ import { LockService } from "../services/lock.service";
 import { runAgentLoop } from "../agent/loop";
 import { logger } from "../utils/logger";
 import { NotFoundError, SessionBusyError } from "../utils/errors";
+import { QuotaService } from "../services/quota.service";
+import { RateLimitError } from "../utils/errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Chat Controller — POST /api/chat
@@ -33,7 +35,12 @@ export const ChatController = {
       const history = await MessageService.loadHistory(sessionId);
       const geminiHistory = MessageService.toGeminiFormat(history);
 
-      // ── 5. Run the agent loop ──────────────────────────────────────────────
+      // ── 5. Check quota before running the agent ───────────────────────────────
+      if (await QuotaService.isExhausted()) {
+        throw new RateLimitError();
+      }
+
+      // ── 6. Run the agent loop ──────────────────────────────────────────────
       logger.info(`[Chat] Starting agent run — session: ${sessionId}`);
       logger.info(`[Chat] Query: "${query}"`);
 
@@ -45,6 +52,7 @@ export const ChatController = {
       });
 
       logger.info(`[Chat] Agent run complete — report: ${reportId}`);
+
       // ── 6. Return the response ─────────────────────────────────────────────
       res.json({
         id: reportId,
